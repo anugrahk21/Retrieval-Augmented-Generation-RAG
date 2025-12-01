@@ -99,5 +99,17 @@ if 'user_pprompt_input' not in st.session_state:
 # 1. Browse and upload document button to load data source
 uploaded_file=st.file_uploader("Upload a document(TXT, MD, PDF, DOCX)", type=['txt', 'md', 'pdf', 'docx'],help="Upload a document that the LLM will reference in its response.")
 if uploaded_file is not None:
-    st.session_state.document_content=read_document_content(uploaded_file)
-    st.success(f"Document '{uploaded_file.name}' uploaded and content extracted successfully!")
+    file_contents=read_document_content(uploaded_file)
+    
+    if file_contents.startswith("Error reading document:"):
+        st.error(file_contents)
+        st.session_state.document_content=""
+        st.stop()
+    else:
+        st.session_state.document_content=file_contents
+        st.success(f"Document '{uploaded_file.name}' uploaded successfully!")
+
+        # Display a preview of the document content
+        with st.expander("View Document Content"):
+            display_content=file_contents[:2000] + ("..." if len(file_contents) > 2000 else "")
+            st.code(display_content, language='text')
