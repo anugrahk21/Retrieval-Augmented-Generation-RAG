@@ -83,3 +83,21 @@ Upload a document, and the LLM is forced to answer  *only* by referencing the do
 Supported file types: `.txt`, `.md`, `.pdf`, `.docx`
 """)
 
+#Initialize session state for document content and response
+
+if 'document_content' not in st.session_state:
+    st.session_state.document_content=""
+
+#Change thr rag response to a dictionary to store both the prompt and the response
+if 'rag_response' not in st.session_state:
+    st.session_state.rag_response={"prompt":"","response":""}
+
+#Initialize the Gemini API for text area
+if 'user_pprompt_input' not in st.session_state:
+    st.session_state.user_prompt_input=""
+
+# 1. Browse and upload document button to load data source
+uploaded_file=st.file_uploader("Upload a document(TXT, MD, PDF, DOCX)", type=['txt', 'md', 'pdf', 'docx'],help="Upload a document that the LLM will reference in its response.")
+if uploaded_file is not None:
+    st.session_state.document_content=read_document_content(uploaded_file)
+    st.success(f"Document '{uploaded_file.name}' uploaded and content extracted successfully!")
