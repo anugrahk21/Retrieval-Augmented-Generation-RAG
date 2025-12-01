@@ -48,3 +48,38 @@ def read_document_content(uploaded_file):
     except Exception as e:
         st.error(f"Error reading document: {e}")
         return f"Error reading document: {e}"
+
+
+#Configure Google Gemini API client
+GEMINI_API_KEY=os.getenv("GEMINI_API_KEY")
+MODEL_NAME="gemini-2.5-flash-lite"
+
+class GeminiAPI:
+    def __init__(self, api_key: Optional[str]=None):
+        self.api_key=api_key or GEMINI_API_KEY
+    
+    def generate_response(self, model:str, content:list, system_instruction:str) -> str:
+        try:
+            client=genai.Client(api_key=self.api_key)
+            config=genai.types.GenerateContentConfig(system_instruction=system_instruction)
+            response=client.models.generate_content(model=model, content=content, config=config)
+            
+        except APIError as e:
+            st.error(f"API Error: {e}")
+            return f"API Error: {e}"
+        
+        except Exception as e:
+            st.error(f"Unexpected Error: {e}")
+            return f"Unexpected Error: {e}"
+
+
+#Streamlit App UI
+st.set_page_config(page_title="RAG with Google Gemini", layout="wide")
+st.title("Retrieval-Augmented Generation (RAG) with Google Gemini")
+st.markdown("""
+This application demonstrates Retrieval-Augmented Generation (RAG) using Google Gemini.
+Upload a document, and the LLM is forced to answer  *only* by referencing the document content in its response.
+
+Supported file types: `.txt`, `.md`, `.pdf`, `.docx`
+""")
+
