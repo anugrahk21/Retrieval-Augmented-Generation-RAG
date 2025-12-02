@@ -113,3 +113,58 @@ if uploaded_file is not None:
         with st.expander("View Document Content"):
             display_content=file_contents[:2000] + ("..." if len(file_contents) > 2000 else "")
             st.code(display_content, language='text')
+
+if not st.session_state.document_content:
+    st.info("Please upload a document to proceed.")
+    st.stop()
+
+# 2. Text area for user prompt input
+st.subheader("Ask a question based on the uploaded document")
+st.text_area("Enter your question here:", key='user_prompt_input', placeholder="e.g., What is the main topic of the document?", height=100, help="Type your question that you want the LLM to answer based on the document content.")
+
+#Initialize Gemini API handler
+gemini_api=GeminiAPI(api_key=GEMINI_API_KEY)
+
+# 3. Generate RAG response button
+def run_rag():
+    current_prompt=st.session_state.get('user_prompt_input', '').strip()
+    if not current_prompt:
+        st.warning("Please enter a question to proceed.")
+        return
+    
+    if not st.session_state.document_content:
+        st.warning("No document content available. Please upload a document first.")
+        return
+    
+    st.session_state.rag_response={"prompt":current_prompt,"response":None}
+    
+    with st.spinner("Generating response..."):
+        
+        system_instruction="You are an AI assistant that answers questions based solely on the provided document content. If the answer is not present in the document, respond with 'The information is not available in the document.'"
+        contents_payload=[
+            {"parts":[{"type":"text/plain","text":st.session_state.document_content}]},
+            {"parts":[{"type":"text/plain","text":current_prompt}]}
+        ]
+        response=gemini_api.generate_response(model=MODEL_NAME, content=contents_payload, system_instruction=system_instruction)
+        
+        st.session_state.rag_response["response"]=response
+        st.success("Response generated successfully!")
+
+# Button to trigger RAG response generation
+st.button("Generate RAG Response", on_click=run_rag, type="primary")
+
+# 4. Output box for populating the RAG response
+st.subheader("RAG Response")
+if st.session_state.get('rag_response') and st.session_state['rag_response'].get("response"):
+    st.markdown("---")
+    st.markdown(f"**Question:** {st.session_state['rag_response']['prompt']}")
+    st.markdown("**Answer:**")
+    st.code(st.session_state['rag_response']['response'], language='text')
+    st.markdown("---")
+else:
+    st.info("The RAG response will appear here once generated.")
+    return response.content if response else "No response received."
+
+st.markdown("---")
+st.caption("Key Features: The RAG system works by constructing a powerful prompt that includes both the document content and the user's question, forcing the LLM to answer *only* based on the uploaded document content. If the answer is not in the document, it clearly states so.")
+st.markdown("Developed by 🚀 Anugrah K. | Retrievable Augmented Generation (RAG) Demo")
