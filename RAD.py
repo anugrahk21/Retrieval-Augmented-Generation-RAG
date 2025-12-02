@@ -6,13 +6,13 @@ from typing import Optional # For type hinting
 from io import BytesIO # For handling byte streams
 from google import genai # Google Gemini API client library
 from google.genai.errors import APIError # For handling API errors
+from dotenv import load_dotenv # For loading environment variables from .env file
 
 try:
-    from pdf import pdfreader
+    from PyPDF2 import PdfReader
 
 except ImportError:
-    pdfreader=None
-
+    PdfReader=None
 try:
     from docx import Document
 
@@ -28,10 +28,10 @@ def read_document_content(uploaded_file):
             return uploaded_file.read().decode('utf-8')
         
         elif file_extension == '.pdf':
-            if not pdfreader:
+            if not PdfReader:
                 st.error("PDF reading functionality is not available. Please install the required library.")
                 return f"PDF reading functionality is not available. Please install the required library."
-            reader=pdfreader(uploaded_file)
+            reader=PdfReader(uploaded_file)
             text=""
             for page in reader.pages:
                 text+=page.extract_text() or "" # Extract text from each page
@@ -51,6 +51,7 @@ def read_document_content(uploaded_file):
 
 
 #Configure Google Gemini API client
+load_dotenv()  # Load environment variables from .env file
 GEMINI_API_KEY=os.getenv("GEMINI_API_KEY")
 MODEL_NAME="gemini-2.5-flash-lite"
 
@@ -62,7 +63,8 @@ class GeminiAPI:
         try:
             client=genai.Client(api_key=self.api_key)
             config=genai.types.GenerateContentConfig(system_instruction=system_instruction)
-            response=client.models.generate_content(model=model, content=content, config=config)
+            response=client.models.generate_content(model=model, contents=content, config=config)
+            return response.text if response else "No response received."
             
         except APIError as e:
             st.error(f"API Error: {e}")
@@ -141,10 +143,7 @@ def run_rag():
     with st.spinner("Generating response..."):
         
         system_instruction="You are an AI assistant that answers questions based solely on the provided document content. If the answer is not present in the document, respond with 'The information is not available in the document.'"
-        contents_payload=[
-            {"parts":[{"type":"text/plain","text":st.session_state.document_content}]},
-            {"parts":[{"type":"text/plain","text":current_prompt}]}
-        ]
+        contents_payload=f"Document Content:\n{st.session_state.document_content}\n\nQuestion: {current_prompt}"
         response=gemini_api.generate_response(model=MODEL_NAME, content=contents_payload, system_instruction=system_instruction)
         
         st.session_state.rag_response["response"]=response
@@ -159,12 +158,17 @@ if st.session_state.get('rag_response') and st.session_state['rag_response'].get
     st.markdown("---")
     st.markdown(f"**Question:** {st.session_state['rag_response']['prompt']}")
     st.markdown("**Answer:**")
-    st.code(st.session_state['rag_response']['response'], language='text')
+    st.markdown(st.session_state['rag_response']['response'])
     st.markdown("---")
 else:
     st.info("The RAG response will appear here once generated.")
-    return response.content if response else "No response received."
 
-st.markdown("---")
-st.caption("Key Features: The RAG system works by constructing a powerful prompt that includes both the document content and the user's question, forcing the LLM to answer *only* based on the uploaded document content. If the answer is not in the document, it clearly states so.")
+st.markdown("""
+<small>
+<b>Key Features:</b><br>
+• The RAG system works by constructing a powerful prompt that includes both the document content and the user's question, forcing the LLM to answer <i>only</i> based on the uploaded document content.<br>
+• If the answer is not in the document, it clearly states so.
+</small><br></br>
+""", unsafe_allow_html=True)
 st.markdown("Developed by 🚀 Anugrah K. | Retrievable Augmented Generation (RAG) Demo")
+st.markdown("Socials: [GitHub](https://github.com/anugrahk21/Retrieval-Augmented-Generation-RAG) | [LinkedIn](https://www.linkedin.com/in/anugrah-k/)")
