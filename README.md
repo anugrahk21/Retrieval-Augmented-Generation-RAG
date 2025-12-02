@@ -9,6 +9,7 @@ A powerful Streamlit application that demonstrates Retrieval-Augmented Generatio
 ## 📋 Table of Contents
 
 - [Overview](#overview)
+- [Why RAG? Understanding Different Approaches](#why-rag-understanding-different-approaches)
 - [Features](#features)
 - [Installation](#installation)
 - [Usage](#usage)
@@ -27,6 +28,123 @@ This application implements a Retrieval-Augmented Generation (RAG) system that:
 - Processes and extracts content from uploaded documents
 - Uses Google Gemini AI to answer questions based exclusively on document content
 - Provides clear responses when information isn't available in the document
+
+## 🧠 Why RAG? Understanding Different Approaches
+
+When working with Large Language Models (LLMs), there are three main approaches to customize their responses to your specific data. Understanding the differences is crucial for choosing the right solution.
+
+### 📝 Normal Prompting
+
+**What it is:** Simply asking the LLM a question using its pre-trained knowledge.
+
+```
+User: "What are the key findings in the 2024 financial report?"
+LLM: "I don't have access to your specific 2024 financial report..."
+```
+
+**Pros:**
+- ✅ Instant - no setup required
+- ✅ Free (just API costs)
+- ✅ Works for general knowledge questions
+
+**Cons:**
+- ❌ No access to your private/recent documents
+- ❌ Can't answer company-specific questions
+- ❌ Knowledge cutoff date limits
+- ❌ May hallucinate when it doesn't know
+
+**Best for:** General questions, public knowledge, creative tasks
+
+---
+
+### 🔍 RAG (Retrieval-Augmented Generation) ⭐ *This Project*
+
+**What it is:** Dynamically providing your document content to the LLM along with your question, forcing it to answer from that specific context.
+
+```
+System: "Here's the document content: [Full 2024 Report]"
+User: "What are the key findings?"
+LLM: "Based on the provided document, the key findings are: 1. Revenue increased by 23%..."
+```
+
+**Pros:**
+- ✅ Works with your private/proprietary documents
+- ✅ Always up-to-date (uses latest document version)
+- ✅ No retraining needed - instant updates
+- ✅ Cost-effective - pay only for API calls
+- ✅ Can cite specific sections from documents
+- ✅ Maintains model's general capabilities
+- ✅ Easy to implement and modify
+
+**Cons:**
+- ❌ Token limits restrict document size
+- ❌ Sends data to external API (privacy concern)
+- ❌ Requires document parsing infrastructure
+- ❌ Slightly slower than normal prompting
+
+**Best for:** Document Q&A, internal knowledge bases, research papers, legal documents, customer support with documentation
+
+---
+
+### 🎓 Fine-Tuning
+
+**What it is:** Retraining the model on your specific dataset to permanently alter its behavior and knowledge.
+
+```
+Training Data: 10,000 examples of your company's style and information
+Result: Model now "knows" your company's data intrinsically
+```
+
+**Pros:**
+- ✅ Model learns your specific domain/style deeply
+- ✅ No need to send documents with every request
+- ✅ Faster responses (no document processing)
+- ✅ Better for specific tasks/formats
+- ✅ Can work offline (if self-hosted)
+
+**Cons:**
+- ❌ Expensive (training costs thousands of dollars)
+- ❌ Time-consuming (days to weeks)
+- ❌ Requires large dataset (1000s of examples)
+- ❌ Needs ML expertise
+- ❌ Difficult to update (requires retraining)
+- ❌ Risk of forgetting general knowledge
+- ❌ Can still hallucinate
+
+**Best for:** Specific writing styles, domain-specific language, repetitive specialized tasks
+
+---
+
+### 📊 Comparison Table
+
+| Feature | Normal Prompting | RAG (This Project) | Fine-Tuning |
+|---------|------------------|-------------------|-------------|
+| **Setup Time** | Instant | Minutes | Days/Weeks |
+| **Cost** | $ (API only) | $$ (API + storage) | $$$$ (Training + API) |
+| **Private Data** | ❌ No | ✅ Yes | ✅ Yes |
+| **Real-time Updates** | N/A | ✅ Instant | ❌ Requires retraining |
+| **Accuracy on Docs** | ⭐ Low | ⭐⭐⭐⭐⭐ High | ⭐⭐⭐⭐ High |
+| **Token Usage** | Low | High | Low |
+| **Expertise Required** | None | Basic | Advanced ML |
+| **Best Use Case** | General Q&A | Document-based Q&A | Task specialization |
+
+---
+
+### 🎯 Why This Project Uses RAG
+
+RAG is the perfect middle ground for most document-based applications:
+
+1. **No Training Required**: Upload a document and start querying immediately
+2. **Always Current**: Update your document, and responses update instantly
+3. **Cost-Effective**: No expensive training runs
+4. **Transparent**: You can see exactly what content the AI is using
+5. **Flexible**: Works with any document type (PDF, DOCX, TXT, MD)
+6. **Scalable**: Easy to add new documents or change content
+
+**Real-World Example:**
+- ❌ Normal Prompting: "What's in the contract?" → AI doesn't know
+- ✅ RAG: Upload contract → "What's in the contract?" → AI reads and answers
+- 🎓 Fine-Tuning: Would require training on thousands of contracts (overkill!)
 
 ## ✨ Features
 
@@ -246,7 +364,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - GitHub: [@anugrahk21](https://github.com/anugrahk21)
 - LinkedIn: [anugrah-k](https://www.linkedin.com/in/anugrah-k/)
-- Email: anugrahk21@gmail.com
+- Email: anugrah.k910@gmail.com
 
 ## 🙏 Acknowledgments
 
